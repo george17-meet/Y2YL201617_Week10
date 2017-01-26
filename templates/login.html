@@ -1,7 +1,6 @@
-<html>
-<head></head>
-
-<body>
+{% extends "layout.html" %}
+{% block title %}Login{% endblock %}
+{% block body %}
 	<h1>Log In Here</h1>
 	<form action="{{url_for('login') }}" method="post">
 		Email Address:<br>
@@ -11,5 +10,4 @@
 		<input type="submit" value="Login"></input>
 	</form>
 	<p> Don't have an account? Create one <a href={{url_for('newCustomer') }}>Here</a></p>
-</body>
-</html>
+{% endblock %}

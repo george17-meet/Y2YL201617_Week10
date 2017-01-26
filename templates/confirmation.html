@@ -1,2 +1,14 @@
-<html>
-</html>
+{% extends "layout.html" %}
+{% block title %}Confirmation{% endblock %}
+{% block body %}
+{% block content %}
+<h1> Thank you! </h1>
+<p>Your order confirmation is {{order.confirmation}}</p>
+<p>Shipping to {{order.customer.address}}</p>
+<a href={{url_for('inventory')}}>Back to home page </a>
+{% endblock %}
+<h1> Thank you! </h1>
+<p>Your order confirmation is {{order.confirmation}}</p>
+<p>Shipping to {{order.customer.address}}</p>
+<a href={{url_for('inventory')}}>Back to home page </a>
+{% endblock %}

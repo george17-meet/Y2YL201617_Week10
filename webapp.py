@@ -2,6 +2,7 @@ from flask import Flask, url_for, flash, redirect, render_template, request
 from model import *
 from flask import session as login_session
 from flask import g
+import locale
 
 app = Flask(__name__)
 app.secret_key = "MY_SUPER_SECRET_KEY"
@@ -137,15 +138,51 @@ def updateQuantity(product_id):
 
 @app.route("/checkout", methods = ['GET', 'POST'])
 def checkout():
-	return "To be implmented"
+	if 'id' not in login_session:
+		flash("You must be logged in to perform this action")
+		return redirect(url_for('login'))
+	shoppingCart = session.query(ShoppingCart).filter_by(customer_id=login_session['id']).one()
+	if request.method== 'POST':
+		order=Order(customer_id=login_session['id'], confirmation=generateConfirmationNumber())
+		order.total=calculateTotal(shoppingCart)
+		for item in shoppingCart.products:
+			assoc=OrdersAssociation(product=item.product, product_qty=item.quantity)
+			order.products.append(assoc)
+			session.delete(item)
+		session.add_all([order, shoppingCart])
+		session.commit()
+		return redirect(url_for('confirmation', confirmation=order.confirmation))
+	elif request.method=='GET':
+		return render_template('checkout.html', shoppingCart=shoppingCart, total="%.2f" % calculateTotal(shoppingCart))
+
+def calculateTotal(shoppingCart):
+	total=0.0
+	for item in shoppingCart.products:
+		price=item.product.price.strip('$')
+		total+=item.quantity * float(price)
+	return total
+
+def generateConfirmationNumber():
+	return "".join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(16))
 
 @app.route("/confirmation/<confirmation>")
 def confirmation(confirmation):
-	return "To be implemented"
+	if 'name' not in login_session:
+		flash("You must be logged in to perform this action")
+		return redirect(url_for('login'))
+	order=session.query(Order).filter_by(confirmation=confirmation).one()
+	return render_template('confirmation.html', order=order)
 
-@app.route('/logout', methods = ['POST'])
+@app.route('/logout', methods = ['GET'])
 def logout():
-	return "To be implmented"
+	if 'id' not in login_session:
+		flash("You must be logged in order to log out")
+		return redirect(url_for('login'))
+	del login_session['name']
+	del login_session['email']
+	del login_session['id']
+	flash("Logged Out Successfully")
+	return redirect(url_for('inventory'))
 
 
 
